@@ -1,0 +1,10 @@
+CREATE TABLE station.metrics(
+id BIGINT PRIMARY KEY,
+sensorId BIGINT NOT NULL,
+name VARCHAR(50) NOT NULL,
+metricValue NUMERIC NOT NULL,
+unitOfMeasure VARCHAR(20) NOT NULL,
+dateTime TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+CONSTRAINT fk_sensor FOREIGN KEY(sensorId)
+REFERENCES station.sensors(id)
+);

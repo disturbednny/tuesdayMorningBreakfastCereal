@@ -1,37 +1,71 @@
-package org.disturbednny.cereal.cerealSpringBootRest.pojo
+package org.disturbednny.cereal.cerealSpringBootRest.pojo;
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonSetter
-import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.JsonSetter;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 
-class TemperatureSensor extends Sensor
-{
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-    private Double temperature
-    String temperatureUoM
-    Double relativeHumidity
+public class TemperatureSensor extends Sensor {
+    private static final Pattern temperaturePattern = Pattern.compile("(?<temp>([+-]?\\d+(\\.\\d+)*))\\s?(?<unit>[CcFf])");
+    private static final Pattern humidityPattern = Pattern.compile("(?<humidity>([+-]?\\d+(\\.\\d+)*))\\s?(?<unit>[%])");
 
-    TemperatureSensor(String name, String location) {
-        super(name, "temperature", location)
+    private Double temperature;
+    private String temperatureUoM;
+    private Double relativeHumidity;
+    public TemperatureSensor(String name, String location) {
+
+        super(name, "temperature", location);
     }
 
-    /// sets the temperature, normalizing to celcius on deserialization.
     @JsonSetter("temperature")
-    void setTemperature(Double value) {
-                // normalize to all celcius for ease of computation later down the road
-        temperature = temperatureUoM.containsIgnoreCase("c") ? value : convertFahrenheitToCelcius(value)
+    public void setTemperature(String value) {
+        // normalize to all celcius for ease of computation later down the road
+        Matcher tempMatcher = temperaturePattern.matcher(value);
+        if(tempMatcher.matches()) {
+            Double tmp = Double.parseDouble(tempMatcher.group("temp"));
+            temperature = StringGroovyMethods.containsIgnoreCase(tempMatcher.group("unit").toLowerCase(), "c") ? tmp : convertFahrenheitToCelcius(tmp);
+            temperatureUoM = "c";
+        }
+        else {
+            throw new IllegalArgumentException("Passed in value was not able to be parsed as a temperature");
+        }
     }
 
-    Double getTemperature() {
-        return temperature
-    }
-    /// converts from fahrenheit to celcius
-    Double convertFahrenheitToCelcius(Double value) {
-        return (value - 32) * (5/9.0)
+    public Double getTemperature() {
+        return temperature;
     }
 
-    /// converts from celcius to fahrenheit
-    Double convertCelciusToFahrenheit(Double value) {
-        return (value * (9.0/5)) + 32
+    public Double convertFahrenheitToCelcius(Double value) {
+        return (value - 32) * (5 / 9.0);
+    }
+
+    public Double convertCelciusToFahrenheit(Double value) {
+        return (value * (9.0 / 5)) + 32;
+    }
+
+    public String getTemperatureUoM() {
+        return temperatureUoM;
+    }
+
+    public void setTemperatureUoM(String temperatureUoM) {
+        this.temperatureUoM = temperatureUoM;
+    }
+
+    public Double getRelativeHumidity() {
+        return relativeHumidity;
+    }
+
+    public void setRelativeHumidity(String relativeHumidity) {
+
+        Matcher humidMatcher = humidityPattern.matcher(relativeHumidity);
+        if(humidMatcher.matches()) {
+            this.relativeHumidity = Double.parseDouble(humidMatcher.group("humidity"));
+        }
+    }
+    public void setRelativeHumidity(Double relativeHumidity) {
+
+            this.relativeHumidity = relativeHumidity;
     }
 }

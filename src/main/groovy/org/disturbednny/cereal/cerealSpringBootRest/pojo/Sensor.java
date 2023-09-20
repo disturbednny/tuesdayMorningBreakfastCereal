@@ -1,26 +1,25 @@
-package org.disturbednny.cereal.cerealSpringBootRest.pojo
+package org.disturbednny.cereal.cerealSpringBootRest.pojo;
 
-class Sensor {
-
-    private String name
-    private String type
-    private String location
-
-    Sensor(String name, String type, String location) {
-        this.name = name
-        this.type = type
-        this.location = location
+public class Sensor {
+    public Sensor(String name, String type, String location) {
+        this.name = name;
+        this.type = type;
+        this.location = location;
     }
 
-    String getName() {
-        return name
+    public String getName() {
+        return name;
     }
 
-    String getType() {
-        return type
+    public String getType() {
+        return type;
     }
 
-    String getLocation() {
-        return location
+    public String getLocation() {
+        return location;
     }
+
+    private final String name;
+    private final String type;
+    private final String location;
 }

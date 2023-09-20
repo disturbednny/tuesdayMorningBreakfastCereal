@@ -40,12 +40,15 @@ class SensorController {
     public ResponseEntity<SensorInputResponse> processSensorData(@RequestBody String requestJson) {
         try {
             SensorInputRequest request  = objectMapper.readValue(requestJson, SensorInputRequest.class)
+            SensorInputResponse result = collectionService.saveSensorData(request)
+            ResponseEntity<SensorInputResponse>.ok(result)
         }
         catch(Exception exception) {
-
+            SensorInputResponse result = new SensorInputResponse()
+            result.message = "Caught exception ${exception.message} when processing request"
+            log.error(result.message)
+            ResponseEntity.internalServerError().body(result)
         }
-
-        return ResponseEntity<SensorInputResponse>.ok(new SensorInputResponse())
     }
 
     @RequestMapping(method = RequestMethod.GET, consumes = "application/json", produces = "application/json")

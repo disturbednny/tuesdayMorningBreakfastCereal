@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="SENSORS_01" author="disturbednny">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="station" tableName="sensors"/>
+            </not>
+        </preConditions>
+        <sqlFile path="${basedir}/sql/table/sensors.sql"/>
+        <comment>
+            Creates the table that houses the sensor metadata
+        </comment>
+    </changeSet>
+    <changeSet id="METRICS_01" author="disturbednny">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists schemaName="station" tableName="metrics"/>
+            </not>
+        </preConditions>
+        <sqlFile path="${basedir}/sql/table/metrics.sql"/>
+        <comment>
+            Creates the table that houses the metric values
+        </comment>
+    </changeSet>
+    
+</databaseChangeLog>

@@ -1,0 +1,6 @@
+CREATE TABLE station.sensors(
+id BIGINT PRIMARY KEY,
+name VARCHAR(50) NOT NULL,
+type VARCHAR(50) NOT NULL,
+location VARCHAR(50) NOT NULL
+);
