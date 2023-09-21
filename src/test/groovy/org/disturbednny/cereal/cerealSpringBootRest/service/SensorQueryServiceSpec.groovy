@@ -161,4 +161,25 @@ class SensorQueryServiceSpec extends Specification{
         1 * mockedWeatherData.findFirstBySensorAndNameOrderByDateTimeDesc(_ as Sensor, "humidity") >> humidityMetrics[0]
 
     }
+
+    def 'one temp sensor, max, specific date not found'() {
+        given:
+        WeatherData mockedWeatherData = Mock(WeatherData)
+        Sensors mockedSensors = Mock(Sensors)
+        SensorQueryRequest request = new SensorQueryRequest().with{
+            query = "give me max temperature and humidity for sensor test-temp-1 for 2023-09-01"
+            return it
+        }
+
+        SensorQueryService service = new SensorQueryService(mockedWeatherData, mockedSensors)
+
+        when:
+        def result = service.processQuery(request)
+        then:
+        1 * mockedSensors.findByName("test-temp-1") >> testSensor
+        1 * mockedWeatherData.findAllBySensorAndNameAndDateTimeBetween(_ as Sensor, "temperature", _ as ZonedDateTime, _ as ZonedDateTime) >> null
+        1 * mockedWeatherData.findAllBySensorAndNameAndDateTimeBetween(_ as Sensor, "humidity", _ as ZonedDateTime, _ as ZonedDateTime) >> null
+        result.message.containsIgnoreCase("no metrics for this time range")
+    }
+
 }
