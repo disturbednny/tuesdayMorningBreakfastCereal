@@ -73,13 +73,14 @@ You can query the service for sensor data. Below is the json schema for sending 
 ```
 Words that the service will pick up on are in the below table:
 
-| type      | words                                           | function                                                                                                                                         |
-|-----------|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| statistic | **min** or **max** or **average**               | gives the min/max/average metric for the value                                                                                                   |
-| sensor    | **sensor {sensorName}**                         | the name of the senosr(s) you want to get the values for. can be one or multiple. must preface name with "sensor " in order for it to pick it up |
-| temporal  | last/past **{number}** **day(s)/week(s)/month** | number is optional. will default to 1. limited to one months worth of data                                                                       |
-| range     | between DD/MM/YYYY and DD/MM/YYYY               | date range. cannot be longer than one month                                                                                                      |
-| metric    | **temperature humidity pressure speed**         | currently supported metrics from the supported sensor types                                                                                      |
+| type         | words                                           | function                                                                                                                                         |
+|--------------|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| statistic    | **min** or **max** or **average**               | gives the min/max/average metric for the value                                                                                                   |
+| sensor       | **sensor {sensorName}**                         | the name of the senosr(s) you want to get the values for. can be one or multiple. must preface name with "sensor " in order for it to pick it up |
+| temporal     | last/past **{number}** **day(s)/week(s)/month** | number is optional. will default to 1. limited to one months worth of data                                                                       |
+| range        | between YYYY-MM-DD and YYYY-MM-DD               | date range. cannot be longer than one month. must be in ISO date format                                                                          |
+| specifc date | YYYY-MM-DD                                      | must be in ISO date format                                                                                                                       |
+| metric       | **temperature humidity pressure speed**         | currently supported metrics from the supported sensor types                                                                                      |
 If no temporal or range is given, the default behavior is to ignore the statistic words and return only the latest values.
 If no sensors are given, or if the sensor is not found, the service will return the metric values for all sensors that have those metrics
 If no metrics are given, then it will not perform the statistic on any of the metrics for the sensor

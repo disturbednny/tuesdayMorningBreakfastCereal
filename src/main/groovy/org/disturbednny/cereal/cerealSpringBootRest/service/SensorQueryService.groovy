@@ -12,7 +12,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -30,8 +35,8 @@ class SensorQueryService {
     private static final Pattern windSpeedPattern = Pattern.compile("(?i)(wind speed)")
     private static final Pattern pressurePattern = Pattern.compile("(?i)((atmospheric)?( )?pressure)")
     private static final Pattern temporalPattern = Pattern.compile("(?i)((?<temporal>last|past)( )(?<number>\\d+)?( )?((?<time>(week|month|day))(s)?))")
-    private static final Pattern betweenPattern = Pattern.compile("(?i)((?i)(?<length>between|from|)( )?(?<range>(?<begin>(\\d?\\d/\\d?\\d/\\d\\d(\\d\\d)?)) and (?<end>(\\d?\\d/\\d?\\d/\\d\\d(\\d\\d)?))))")
-    private static final Pattern forSpecificDatePattern = Pattern.compile("(?i)(?<date>(\\d?\\d/\\d\\d?/\\d\\d(\\d\\d)?))")
+    private static final Pattern betweenPattern = Pattern.compile("(?i)((?<length>between|from|)( )?(?<range>(?<begin>(\\d{4}-\\d{2}-\\d{2}){1})) and (?<end>(\\d{4}-\\d{2}-\\d{2}){1}))")
+    private static final Pattern forSpecificDatePattern = Pattern.compile("(?i)(?<date>(\\d{4}-\\d{2}-\\d{2}){1})")
 
 
 
@@ -81,8 +86,8 @@ class SensorQueryService {
 
         if(betweenMatcher.find()) {
             try {
-                begin = ZonedDateTime.parse(betweenMatcher.group("begin"))
-                end = ZonedDateTime.parse(betweenMatcher.group("end"))
+                begin = ZonedDateTime.of(LocalDate.parse(betweenMatcher.group("begin")), LocalTime.MIDNIGHT, ZoneId.systemDefault())
+                end = ZonedDateTime.of(LocalDate.parse(betweenMatcher.group("end")), LocalTime.MIDNIGHT, ZoneId.systemDefault())
             }
             catch (Exception ex) {
                 response.message = "Unable to get begin and end dates. check your formatting and try again"
@@ -149,8 +154,8 @@ class SensorQueryService {
         }
         else if(specificDateMatcher.find()) {
             try {
-                begin = ZonedDateTime.parse(specificDateMatcher.group("date"))
-                end = ZonedDateTime.parse(specificDateMatcher.group("date"))
+                begin = ZonedDateTime.of(LocalDate.parse(specificDateMatcher.group("date")), LocalTime.MIDNIGHT, ZoneId.systemDefault())
+                end = ZonedDateTime.of(LocalDate.parse(specificDateMatcher.group("date")), LocalTime.MIDNIGHT, ZoneId.systemDefault())
             }
             catch (Exception ex) {
                 response.message = "Unable to get begin and end dates. check your formatting and try again"
@@ -276,6 +281,9 @@ class SensorQueryService {
 
     String processMetricsIntoResults(List<WeatherMetric> metrics, ZonedDateTime begin, ZonedDateTime end, boolean min, boolean max, boolean average) {
         TextStringBuilder builder = new TextStringBuilder()
+        if(metrics.size() == 0){
+            return "no metrics for this time range\n"
+        }
         if(begin != null && end != null) {
             if (min) {
                 builder.appendln("min ${metrics[0].name}: ${metrics.stream().min(Comparator.comparing(WeatherMetric::getValue)).map(it -> it.prettyValue).orElse("N/A")}")
