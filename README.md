@@ -9,6 +9,7 @@ The database has to exist, but the database schema, and its tables, are managed 
 The purpose of the service is to receive sensor data from sensors and persist them to a database for future querying.
 
 ## Using the service
+In order to interact with the service, you will need ot either use curl or postman if you prefer a gui
 ### Sending data to the service
 In order for the service to handle the sensor data properly, the data has to be sent via a PUT command with the body formatted in JSON. Each sensor type has a json schema, and the examples are provided below:
 
@@ -67,13 +68,21 @@ You can query the service for sensor data. Below is the json schema for sending 
 
 ```json
 {
-  "statisticType": "all", // min, max, average
-  "metrics": "temperature,humidity", // either all or comma delimited list
-  "sensorName": "sensorName",
-  "daysBack": 1 // can be up to a month(30 days)
+  "query": "give me the min max and average temperature and humidity from sensor temp-1 for the last three days"
 }
 ```
+Words that the service will pick up on are in the below table:
 
+| type      | words                                           | function                                                                                                                                         |
+|-----------|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| statistic | **min** or **max** or **average**               | gives the min/max/average metric for the value                                                                                                   |
+| sensor    | **sensor {sensorName}**                         | the name of the senosr(s) you want to get the values for. can be one or multiple. must preface name with "sensor " in order for it to pick it up |
+| temporal  | last/past **{number}** **day(s)/week(s)/month** | number is optional. will default to 1. limited to one months worth of data                                                                       |
+| range     | between DD/MM/YYYY and DD/MM/YYYY               | date range. cannot be longer than one month                                                                                                      |
+| metric    | **temperature humidity pressure speed**         | currently supported metrics from the supported sensor types                                                                                      |
+If no temporal or range is given, the default behavior is to ignore the statistic words and return only the latest values.
+If no sensors are given, or if the sensor is not found, the service will return the metric values for all sensors that have those metrics
+If no metrics are given, then it will not perform the statistic on any of the metrics for the sensor
 
 #### To run locally
 You must have a postgresql installed locally.
@@ -94,3 +103,8 @@ Once all of this is done, you can add the username and password to the environme
 If you don't, default username and password will be used (see [application.yml](src/main/resources/application.yaml))
 
 Liquibase will run on first startup and create the missing schema and tables. If after initial startup you want to seed data. There is a python script which will inject the data into the sensor and metric tables.
+
+If you use intelliJ, you can set up the run parameters and add in the environment variables there. otherwise set them in your environment before running the following
+```shell
+./gradlew bootRun
+```

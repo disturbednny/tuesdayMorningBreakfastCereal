@@ -65,7 +65,7 @@ public class WeatherMetric {
     }
 
     public String getPrettyValue() {
-        return String.format("%f %s", value, unitOfMeasure);
+        return String.format("%.2f %s", value, unitOfMeasure);
     }
 
 }

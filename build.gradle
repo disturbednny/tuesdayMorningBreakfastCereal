@@ -29,7 +29,6 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation group: 'org.spockframework', name: 'spock-core', version: '2.4-M1-groovy-4.0'
 	testImplementation 'org.testcontainers:postgresql'
-//	testImplementation 'com.squareup.okhttp3:mockwebserver:4.11.0'
 }
 
 tasks.named('test') {

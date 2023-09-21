@@ -65,6 +65,7 @@ class SensorQueryService {
             sensor = sensors.findByName(sensorName)
             if(sensor == null){
                 response.message = "unable to find sensor by this name in the database. name passed in was ${sensorName}"
+                response.success = false
                 log.error(response.message)
                 return response
             }
@@ -85,6 +86,7 @@ class SensorQueryService {
             }
             catch (Exception ex) {
                 response.message = "Unable to get begin and end dates. check your formatting and try again"
+                response.success = false
                 log.error(response.message)
                 return response
             }
@@ -107,6 +109,7 @@ class SensorQueryService {
                 case "day": {
                     if(numberOfTemporal > 31) {
                         response.message = "you can only request up to one month of data. please reduce your date range or your request"
+                        response.success = false
                         log.warn(response.message)
                         return response
                     }
@@ -117,6 +120,7 @@ class SensorQueryService {
                 case "week": {
                     if(numberOfTemporal > 4) {
                         response.message = "you can only request up to one month of data. please reduce your date range or your request"
+                        response.success = false
                         log.warn(response.message)
                         return response
                     }
@@ -128,6 +132,7 @@ class SensorQueryService {
                 case "month": {
                     if(numberOfTemporal > 1) {
                         response.message = "you can only request up to one month of data. please reduce your date range or your request"
+                        response.success = false
                         log.warn(response.message)
                         return response
                     }
@@ -137,6 +142,7 @@ class SensorQueryService {
                 }
                 default:
                     response.message = "temporal unit not supported at this time. file a feature request"
+                    response.success = false
                     log.warn(response.message)
                     break
             }
@@ -148,6 +154,7 @@ class SensorQueryService {
             }
             catch (Exception ex) {
                 response.message = "Unable to get begin and end dates. check your formatting and try again"
+                response.success = false
                 log.error(response.message)
                 return response
             }
@@ -160,6 +167,7 @@ class SensorQueryService {
         // now that we have our begin and end times, lets look at metrics.
         //now, pass the query along with the metrics so we can run the arithmetic
         response.message = getAndProcessMetrics(sensorList, query, begin, end)
+        response.success = true
         return response
     }
 
@@ -172,10 +180,6 @@ class SensorQueryService {
         boolean maxRequested
         boolean avgRequested
         TextStringBuilder resultsBuilder = new TextStringBuilder()
-        TextStringBuilder resultsBuilderTemp = new TextStringBuilder()
-        TextStringBuilder resultsBuilderHumid = new TextStringBuilder()
-        TextStringBuilder resultsBuilderPress = new TextStringBuilder()
-        TextStringBuilder resultsBuilderSpeed = new TextStringBuilder()
         List<WeatherMetric> temperatures = new ArrayList<>()
         List<WeatherMetric> humidityVals = new ArrayList<>()
         List<WeatherMetric> pressures = new ArrayList<>()
@@ -193,83 +197,36 @@ class SensorQueryService {
             needWindSpeed = needPressure = needHumidity = needTemperature = true
         }
 
+        resultsBuilder.appendln("Results are: ")
         //currently only the temperature sensor is the only one that has multiple metrics on it, so it needs special handling
         sensorList.forEach { Sensor it ->
+            resultsBuilder.appendln("Metrics from sensor ${it.name}")
             if (it.type.containsIgnoreCase("temperature")) {
                 if (needTemperature) {
                     temperatures.addAll(getTemperatureMetrics(it, begin, end).collect())
+                    resultsBuilder.append(processMetricsIntoResults(temperatures, begin, end, minRequested, maxRequested, avgRequested))
                 }
                 if (needHumidity) {
                     humidityVals.addAll(getHumidityMetrics(it, begin, end).collect())
+                    resultsBuilder.append(processMetricsIntoResults(humidityVals, begin, end, minRequested, maxRequested, avgRequested))
                 }
             } else if (it.type.containsIgnoreCase("wind")) {
                 if (needWindSpeed) {
                     windSpeeds.addAll(getWindSpeedMetrics(it, begin, end).collect())
+                    resultsBuilder.append(processMetricsIntoResults(windSpeeds, begin, end, minRequested, maxRequested, avgRequested))
                 }
             } else if (it.type.containsIgnoreCase("pressure")) {
                 if (needPressure) {
                     pressures.addAll(getPressureMetrics(it, begin, end).collect())
+                    resultsBuilder.append(processMetricsIntoResults(pressures, begin, end, minRequested, maxRequested, avgRequested))
                 }
             }
+            temperatures.clear()
+            humidityVals.clear()
+            windSpeeds.clear()
+            pressures.clear()
         }
-
-        //once we have all metrics for each type, now we can see if we need min, max, avg
-        //if begin and end are null, there's no point in running these as there will only be 0 or one record as it will be the latest value
-        if(begin != null && end != null) {
-            if (minRequested) {
-                if (needTemperature)
-                    resultsBuilderTemp.appendln("min Temperature: ${temperatures.stream().min(Comparator.comparing(WeatherMetric::getValue)).map {it.getPrettyValue()}.orElse("0.0")}")
-                if (needHumidity)
-                    resultsBuilderHumid.appendln("min humidty: ${humidityVals.stream().min(Comparator.comparing(WeatherMetric::getValue)).map {it.getPrettyValue()}}}")
-                if (needPressure)
-                    resultsBuilderPress.appendln("min pressure: ${pressures.stream().min(Comparator.comparing(WeatherMetric::getValue)).map {it.getPrettyValue()}}}")
-                if (needWindSpeed)
-                    resultsBuilderSpeed.appendln("min wind speed: ${windSpeeds.stream().min(Comparator.comparing(WeatherMetric::getValue)).map {it.getPrettyValue()}}}")
-            }
-            if (maxRequested) {
-                if (needTemperature)
-                    resultsBuilderTemp.appendln("max Temperature: ${temperatures.stream().max(Comparator.comparing(WeatherMetric::getValue)).map {it.getPrettyValue()}}}")
-                if (needHumidity)
-                    resultsBuilderHumid.appendln("max humidty: ${humidityVals.stream().max(Comparator.comparing(WeatherMetric::getValue)).map {it.getPrettyValue()}}}")
-                if (needPressure)
-                    resultsBuilderPress.appendln("max pressure: ${pressures.stream().max(Comparator.comparing(WeatherMetric::getValue)).map {it.getPrettyValue()}}}")
-                if (needWindSpeed)
-                    resultsBuilderSpeed.appendln("max wind speed: ${windSpeeds.stream().max(Comparator.comparing(WeatherMetric::getValue)).map {it.getPrettyValue()}}}")
-            }
-            if (avgRequested) {
-                if (needTemperature)
-                    resultsBuilderTemp.appendln("avg Temperature: ${temperatures.stream().mapToDouble(v -> v.getValue()).average().orElse(0.0)} C")
-                if (needHumidity)
-                    resultsBuilderHumid.appendln("avg humidty: ${humidityVals.stream().mapToDouble(v -> v.getValue()).average().orElse(0.0)} ${humidityVals.first().unitOfMeasure}")
-                if (needPressure)
-                    resultsBuilderPress.appendln("avg pressure: ${pressures.stream().mapToDouble(v -> v.getValue()).average().orElse(0.0)} ${pressures.first().unitOfMeasure}")
-                if (needWindSpeed)
-                    resultsBuilderSpeed.appendln("avg wind speed: ${windSpeeds.stream().mapToDouble(v -> v.getValue()).average().orElse(0.0)} ${windSpeeds.first().unitOfMeasure}")
-            }
-        }
-        else {
-            // we need to return the latest metric, check to see which ones we have available
-            if(temperatures.size() == 1)
-                resultsBuilderTemp.appendln("latest temperature value is ${temperatures.first().value} ${temperatures.first().unitOfMeasure}")
-            if(humidityVals.size() == 1)
-                resultsBuilderHumid.appendln("latest humidity value is ${humidityVals.first().value} ${humidityVals.first().unitOfMeasure}")
-            if(windSpeeds.size() == 1)
-                resultsBuilderSpeed.appendln("latest wind speed value is ${windSpeeds.first().value} ${windSpeeds.first().unitOfMeasure}")
-            if(pressures.size() == 1)
-                resultsBuilderPress.appendln("latest atmospheric pressure value is ${pressures.first().value} ${pressures.first().unitOfMeasure}")
-        }
-
-        resultsBuilder.appendln("Results are: ")
-        if(resultsBuilderTemp.length() > 0)
-            resultsBuilder.append(resultsBuilderTemp.toString())
-        if(resultsBuilderHumid.length() > 0)
-            resultsBuilder.append(resultsBuilderHumid.toString())
-        if(resultsBuilderSpeed.length() > 0)
-            resultsBuilder.append(resultsBuilderSpeed.toString())
-        if(resultsBuilderPress.length() > 0)
-            resultsBuilder.append(resultsBuilderPress.toString())
-        return resultsBuilder.toString()
-
+        return resultsBuilder.build()
     }
 
     ArrayList<WeatherMetric> getTemperatureMetrics(Sensor sensor, ZonedDateTime begin, ZonedDateTime end) {
@@ -315,5 +272,26 @@ class SensorQueryService {
             tmp.add(weatherData.findFirstBySensorOrderByDateTimeDesc(sensor))
             return tmp
         }
+    }
+
+    String processMetricsIntoResults(List<WeatherMetric> metrics, ZonedDateTime begin, ZonedDateTime end, boolean min, boolean max, boolean average) {
+        TextStringBuilder builder = new TextStringBuilder()
+        if(begin != null && end != null) {
+            if (min) {
+                builder.appendln("min ${metrics[0].name}: ${metrics.stream().min(Comparator.comparing(WeatherMetric::getValue)).map(it -> it.prettyValue).orElse("N/A")}")
+            }
+            if (max) {
+                builder.appendln("max ${metrics[0].name}: ${metrics.stream().max(Comparator.comparing(WeatherMetric::getValue)).map(it -> it.prettyValue).orElse("N/A")}")
+            }
+            if (average) {
+                builder.appendln("avg ${metrics[0].name}: ${metrics.stream().mapToDouble(v -> v.getValue()).average().orElse(0.0)} ${metrics[0].unitOfMeasure}")
+            }
+        }
+        else {
+            // we need to return the latest metric, check to see which ones we have available
+            if(metrics.size() == 1)
+                builder.appendln("latest ${metrics[0].name} value is ${metrics[0].value} ${metrics[0].unitOfMeasure}")
+        }
+        return builder.toString()
     }
 }

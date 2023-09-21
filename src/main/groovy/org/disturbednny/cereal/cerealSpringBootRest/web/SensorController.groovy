@@ -37,9 +37,9 @@ class SensorController {
 
     @RequestMapping(method = RequestMethod.PUT, consumes = "application/json", produces = "application/json")
     @ResponseBody
-    public ResponseEntity<SensorInputResponse> processSensorData(@RequestBody String requestJson) {
+    public ResponseEntity<SensorInputResponse> processSensorData(@RequestBody SensorInputRequest requestJson) {
         try {
-            SensorInputRequest request  = objectMapper.readValue(requestJson, SensorInputRequest.class)
+            SensorInputRequest request  = requestJson
             SensorInputResponse result = collectionService.saveSensorData(request)
             ResponseEntity<SensorInputResponse>.ok(result)
         }
@@ -51,19 +51,22 @@ class SensorController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
+    @RequestMapping(method = RequestMethod.GET, consumes = "application/json")
     @ResponseBody
-    public ResponseEntity<SensorQueryResponse> getWeatherData(@RequestBody String requestJson) {
+    public ResponseEntity<String> getWeatherData(@RequestBody SensorQueryRequest requestJson) {
         try {
-            SensorQueryRequest request = objectMapper.readValue(requestJson, SensorQueryRequest.class)
+            SensorQueryRequest request = requestJson
             SensorQueryResponse response = queryService.processQuery(request)
-            ResponseEntity<SensorQueryResponse>.ok(response)
+            if(response.success)
+                ResponseEntity<String>.ok(response.message)
+            else
+                ResponseEntity<String>.badRequest().body(response.message)
         }
         catch (Exception exception) {
             log.error("Caught exception ${exception.message} when processing request")
             SensorQueryResponse response = new SensorQueryResponse()
 
-            ResponseEntity<SensorQueryResponse>.internalServerError().body(response)
+            ResponseEntity<String>.internalServerError().body(response.message)
         }
 
     }
