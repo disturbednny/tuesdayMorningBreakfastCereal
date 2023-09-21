@@ -64,4 +64,8 @@ public class WeatherMetric {
         this.dateTime = dateTime;
     }
 
+    public String getPrettyValue() {
+        return String.format("%f %s", value, unitOfMeasure);
+    }
+
 }

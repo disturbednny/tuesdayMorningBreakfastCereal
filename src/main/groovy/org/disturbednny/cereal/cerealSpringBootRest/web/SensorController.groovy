@@ -56,13 +56,15 @@ class SensorController {
     public ResponseEntity<SensorQueryResponse> getWeatherData(@RequestBody String requestJson) {
         try {
             SensorQueryRequest request = objectMapper.readValue(requestJson, SensorQueryRequest.class)
+            SensorQueryResponse response = queryService.processQuery(request)
+            ResponseEntity<SensorQueryResponse>.ok(response)
         }
         catch (Exception exception) {
             log.error("Caught exception ${exception.message} when processing request")
             SensorQueryResponse response = new SensorQueryResponse()
 
-            return ResponseEntity<SensorQueryResponse>.internalServerError().body(response)
+            ResponseEntity<SensorQueryResponse>.internalServerError().body(response)
         }
-        return ResponseEntity<SensorQueryResponse>.ok(new SensorQueryResponse())
+
     }
 }

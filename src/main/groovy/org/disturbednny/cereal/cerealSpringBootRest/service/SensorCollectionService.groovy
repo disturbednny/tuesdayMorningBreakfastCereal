@@ -51,10 +51,13 @@ class SensorCollectionService {
                 TemperatureSensor sensor = new TemperatureSensor(sensorInputRequest.sensorName, sensorInputRequest.sensorLocation)
                 try {
                     sensor.temperature = sensorInputRequest.metrics["temperature"]
-                    sensor.relativeHumidity = Double.parseDouble(sensorInputRequest.metrics["humidity"])
+                    sensor.relativeHumidity = sensorInputRequest.metrics["humidity"]
                 }
                 catch(Exception ex) {
-                    log.error("meep")
+                    result.message = "error in parsing metrics for temperature sensor. check your inputs"
+                    result.success = false
+                    log.error(result.message)
+                    return result
                 }
                 //check to see if the sensor is in the list of sensors already
                 try {
@@ -68,11 +71,14 @@ class SensorCollectionService {
                     }
                 }
                 catch (Exception ex) {
-                    log.error("error looking up sensor in database. ${ex.message}")
+                    result.message = "error looking up sensor in database. ${ex.message}"
+                    result.success = false
+                    log.error(result.message)
+                    return result
                 }
 
                 try {
-                    // now perist all metrics
+                    // now persist all metrics
                     WeatherMetric temperature = new WeatherMetric()
                     temperature.setValue(sensor.getTemperature())
                     temperature.setUnitOfMeasure(sensor.temperatureUoM)
@@ -91,7 +97,10 @@ class SensorCollectionService {
                     metricRepository.saveAll(metricsToSave)
                 }
                 catch (Exception ex) {
-                    log.error("error in persisting metrics to database ${ex}")
+                    result.message = "error in persisting metrics to database ${ex}"
+                    result.success = false
+                    log.error(result.message)
+                    return result
                 }
                 break
             }
@@ -118,11 +127,14 @@ class SensorCollectionService {
                     }
                 }
                 catch (Exception ex) {
-                    log.error("error looking up sensor in database. ${ex.message}")
+                    result.message = "error looking up sensor in database. ${ex.message}"
+                    result.success = false
+                    log.error(result.message)
+                    return result
                 }
 
                 try {
-                    // now perist all metrics
+                    // now persist all metrics
                     WeatherMetric windSpeed = new WeatherMetric()
                     windSpeed.setValue(sensor.getSpeed())
                     windSpeed.setUnitOfMeasure(sensor.uoM)
@@ -133,7 +145,10 @@ class SensorCollectionService {
                     metricRepository.saveAll(metricsToSave)
                 }
                 catch (Exception ex) {
-                    log.error("error in persisting metrics to database ${ex}")
+                    result.message = "error in persisting metrics to database ${ex}"
+                    result.success = false
+                    log.error(result.message)
+                    return result
                 }
                 break
             }
@@ -159,11 +174,13 @@ class SensorCollectionService {
                     }
                 }
                 catch (Exception ex) {
-                    log.error("error looking up sensor in database. ${ex.message}")
-                }
+                    result.message = "error looking up sensor in database. ${ex.message}"
+                    result.success = false
+                    log.error(result.message)
+                    return result                }
 
                 try {
-                    // now perist all metrics
+                    // now persist all metrics
                     WeatherMetric pressure = new WeatherMetric()
                     pressure.setValue(sensor.getPressure())
                     pressure.setUnitOfMeasure(sensor.uoM)
@@ -174,7 +191,10 @@ class SensorCollectionService {
                     metricRepository.saveAll(metricsToSave)
                 }
                 catch (Exception ex) {
-                    log.error("error in persisting metrics to database ${ex}")
+                    result.message = "error in persisting metrics to database ${ex}"
+                    result.success = false
+                    log.error(result.message)
+                    return result
                 }
                 break
             }

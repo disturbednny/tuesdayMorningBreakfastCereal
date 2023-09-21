@@ -15,7 +15,10 @@ interface WeatherData extends JpaRepository<WeatherMetric,Long> {
 
     List<WeatherMetric> findAllBySensor(Sensor sensor)
 
+    WeatherMetric findFirstBySensorAndNameOrderByDateTimeDesc(Sensor sensor, String name)
     WeatherMetric findFirstBySensorOrderByDateTimeDesc(Sensor sensor)
 
     List<WeatherMetric> findAllBySensorAndDateTimeBetween(Sensor sensor, ZonedDateTime start, ZonedDateTime end)
+    List<WeatherMetric> findAllBySensorAndNameAndDateTimeBetween(Sensor sensor, String name, ZonedDateTime start, ZonedDateTime end)
+
 }
