@@ -1,0 +1,14 @@
+spring:
+  jpa:
+    hibernate.ddl-auto: create
+  datasource:
+    driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:postgresql:11.1:///integration-tests-db
+  liquibase:
+    enabled: false
+    drop-first: false
+    change-log: classpath:/liquibase/main.xml
+logging:
+  level:
+    root: INFO
+    org.disturbednny: DEBUG

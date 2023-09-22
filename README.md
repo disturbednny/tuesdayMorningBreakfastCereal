@@ -1,7 +1,7 @@
 # tuesdayMorningBreakfastCereal
-This service is built with a combination of groovy and java. since Groovy is a language built on top of java, the two can be used interchangeably during development in order to speed up some code creation.
+This service is built with a combination of Groovy and Java. Because Groovy is a language built on top of Java, the two can be used interchangeably during development in order to speed up some code creation.
 
-The backing database is currently postgres, but it could be changed to a different database if it is deemed that the performance isn't there in high traffic scenarios. for the purposes of this POC, I decided to use what I have been using the last few years.
+The backing database is currently Postgres, but it could be changed to a different database if it is deemed that the performance isn't there in high traffic scenarios. For the purposes of this POC, I decided to use what I have been using the last few years.
 Influx may be a potential replacement due to grouping and time sharding, however my expertise on using this type of database is limited.
 The database has to exist, but the database schema, and its tables, are managed by Liquibase in order to make sure the state of the database is tracked for any changes made.
 
@@ -9,7 +9,7 @@ The database has to exist, but the database schema, and its tables, are managed 
 The purpose of the service is to receive sensor data from sensors and persist them to a database for future querying.
 
 ## Using the service
-In order to interact with the service, you will need ot either use curl or postman if you prefer a gui
+In order to interact with the service, you will need to either use curl or postman if you prefer a gui.
 ### Sending data to the service
 In order for the service to handle the sensor data properly, the data has to be sent via a PUT command with the body formatted in JSON. Each sensor type has a json schema, and the examples are provided below:
 
