@@ -103,7 +103,7 @@ Once all of this is done, you can add the username and password to the environme
 
 If you don't, default username and password will be used (see [application.yml](src/main/resources/application.yaml))
 
-Liquibase will run on first startup and create the missing schema and tables. If after initial startup you want to seed data. There is a python script which will inject the data into the sensor and metric tables.
+Liquibase will run on first startup and create the missing schema and tables. If after initial startup you want to seed data, There is a SQL script which will inject the data into the sensor and metric tables. You can either run this from pgadmin, dbeaver, or execute it through psql.
 
 If you use intelliJ, you can set up the run parameters and add in the environment variables there. otherwise set them in your environment before running the following
 ```shell
