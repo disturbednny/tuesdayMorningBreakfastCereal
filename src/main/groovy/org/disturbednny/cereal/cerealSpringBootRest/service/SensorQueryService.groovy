@@ -48,11 +48,21 @@ class SensorQueryService {
         this.sensors = sensors
     }
 
+    /**
+     * This method takes in a SensorQueryRequest, parses the query out for statistic types, metrics to gather statistics on,
+     * the sensor(s) to get the metrics for, and the time range. If no time range is given, it will provide the latest metrics
+     * for each sensor.
+     *
+     * There is validation in place for time range. if the query is empty, the service will assume you want the latest metrics for all sensors
+     *
+     * @param SensorQueryRequest request
+     * @return SensorQuery response with success / failure along with the message of either all of the statistics and metrics per sensor, or error message
+     */
     SensorQueryResponse processQuery(SensorQueryRequest request) {
         log.debug("starting processing of query")
         SensorQueryResponse response = new SensorQueryResponse()
-        ZonedDateTime begin
-        ZonedDateTime end
+        ZonedDateTime begin = null
+        ZonedDateTime end = null
         String query = request.query
         Matcher sensorMatcher = sensorPattern.matcher(query)
         Matcher temporalMatcher = temporalPattern.matcher(query)
@@ -146,6 +156,8 @@ class SensorQueryService {
                     break
                 }
                 default:
+                    // this switch case should never get hit, unless the matcher is changed to include year, hours, minutes, etc
+                    // and the switch case hasn't been updated
                     response.message = "temporal unit not supported at this time. file a feature request"
                     response.success = false
                     log.warn(response.message)

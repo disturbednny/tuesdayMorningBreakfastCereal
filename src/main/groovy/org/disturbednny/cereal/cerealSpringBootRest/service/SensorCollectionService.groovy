@@ -1,6 +1,5 @@
 package org.disturbednny.cereal.cerealSpringBootRest.service
 
-import org.aspectj.lang.reflect.CatchClauseSignature
 import org.disturbednny.cereal.cerealSpringBootRest.db.Sensors
 import org.disturbednny.cereal.cerealSpringBootRest.db.WeatherData
 import org.disturbednny.cereal.cerealSpringBootRest.db.model.Sensor
@@ -111,6 +110,11 @@ class SensorCollectionService {
                     result.success = false
                     return result
                 }
+                else if (!sensorInputRequest.metrics.get("unit").equalsIgnoreCase("mph")){
+                    result.message = "currently only mph is a supported unit. please convert and send again"
+                    result.success = false
+                    return result
+                }
                 WindSensor sensor = new WindSensor(sensorInputRequest.sensorName, sensorInputRequest.sensorLocation)
                 sensor.speed = Double.parseDouble(sensorInputRequest.metrics["speed"])
                 sensor.uoM = sensorInputRequest.metrics["unit"]
@@ -156,6 +160,11 @@ class SensorCollectionService {
                 log.debug("persisting atmospheric pressure from sensor ${sensorInputRequest.sensorName}")
                 if(!sensorInputRequest.metrics.containsKey("pressure") || !sensorInputRequest.metrics.containsKey("unit")) {
                     result.message = "metrics list is missing one or more required fields for sensor type ${sensorInputRequest.sensorType}. required metrics are pressure and unit."
+                    return result
+                }
+                else if (!sensorInputRequest.metrics.get("unit").equalsIgnoreCase("bar")){
+                    result.message = "currently only bar is a supported unit. please convert and send again"
+                    result.success = false
                     return result
                 }
                 PressureSensor sensor = new PressureSensor(sensorInputRequest.sensorName, sensorInputRequest.sensorLocation)
